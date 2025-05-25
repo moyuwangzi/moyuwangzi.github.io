@@ -121,7 +121,7 @@ author:
   links:
     - label: "Email"
       icon: "fas fa-fw fa-envelope-square"
-      url: "photony@stu2022.jnu.edu.cn"
+      url: "mailto:photony@stu2022.jnu.edu.cn"
     # - label: "Website"
     #   icon: "fas fa-fw fa-link"
       # url: "https://your-website.com"
@@ -143,7 +143,7 @@ footer:
   links:
     - label: "Email"
       icon: "fas fa-fw fa-envelope-square"
-      url: "photony@stu2022.jnu.edu.cn"
+      url: "mailto:photony@stu2022.jnu.edu.cn"
     # - label: "Twitter"
     #   icon: "fab fa-fw fa-twitter-square"
     #   # url:
