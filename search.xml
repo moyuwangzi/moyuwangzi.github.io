@@ -1,50 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>Hello World</title>
-    <url>/2026/05/14/hello-world/</url>
-    <content><![CDATA[Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer in troubleshooting or you can ask me on GitHub.
-Quick StartCreate a new post$ hexo new &quot;My New Post&quot;
-
-More info: Writing
-Run server$ hexo server
-
-More info: Server
-Generate static files$ hexo generate
-
-More info: Generating
-Deploy to remote sites$ hexo deploy
-
-More info: Deployment
-]]></content>
-  </entry>
-  <entry>
     <title>高斯分布</title>
     <url>/2025/10/16/%E9%AB%98%E6%96%AF%E5%88%86%E5%B8%83/</url>
     <content><![CDATA[高斯分布（Gaussian distribution），又叫正态分布（Normal distribution），是最重要的连续型概率分布之一。它在自然界、物理、统计、AI、金融等领域中都极其常见。
-定义若随机变量 $X$ 服从均值 $\mu$、方差为 $\sigma^{2}$ 的正态分布，记：
-$$X\sim N(\mu,\sigma^{2})$$
+定义
+若随机变量 XXX 服从均值 μ\muμ、方差为 σ2\sigma^{2}σ2 的正态分布，记：
+X∼N(μ,σ2)X\sim N(\mu,\sigma^{2})
+X∼N(μ,σ2)
 那么它的概率密度函数 (PDF) 为：
-$$f(x) &#x3D; \frac{1}{\sqrt{2\pi \sigma^{2}}}e^{-\frac{(x-\mu)^{2}}{2\sigma^{2}}},\quad x \in (-\infty,+\infty)$$
-其中 $\mu, \sigma$ 分别是分布的期望值和标准差。
-图像特征高斯分布的曲线形状是对称的钟形曲线（bell curve）：
+f(x)=12πσ2e−(x−μ)22σ2,x∈(−∞,+∞)f(x) = \frac{1}{\sqrt{2\pi \sigma^{2}}}e^{-\frac{(x-\mu)^{2}}{2\sigma^{2}}},\quad x \in (-\infty,+\infty)
+f(x)=2πσ2​1​e−2σ2(x−μ)2​,x∈(−∞,+∞)
+其中 μ,σ\mu, \sigmaμ,σ 分别是分布的期望值和标准差。
+图像特征
+高斯分布的曲线形状是对称的钟形曲线（bell curve）：
 
-在 $x&#x3D;\mu$ 处取得最大值
-曲线关于 $\mu$ 对称
+在 x=μx=\mux=μ 处取得最大值
+曲线关于 μ\muμ 对称
 约有：
-68.3% 的样本落在 $[\mu-\sigma, \mu+\sigma]$ 内
-95.4% 的样本落在 $[\mu-2\sigma, \mu+2\sigma]$ 内
-99.7% 的样本落在 $[\mu-3\sigma, \mu+3\sigma]$ 内
+
+68.3% 的样本落在 [μ−σ,μ+σ][\mu-\sigma, \mu+\sigma][μ−σ,μ+σ] 内
+95.4% 的样本落在 [μ−2σ,μ+2σ][\mu-2\sigma, \mu+2\sigma][μ−2σ,μ+2σ] 内
+99.7% 的样本落在 [μ−3σ,μ+3σ][\mu-3\sigma, \mu+3\sigma][μ−3σ,μ+3σ] 内
 
 
 
-标准正态分布当 $\mu&#x3D;0, \sigma&#x3D;1$ 时：
-$$Z\sim N(0,1)$$
+标准正态分布
+当 μ=0,σ=1\mu=0, \sigma=1μ=0,σ=1 时：
+Z∼N(0,1)Z\sim N(0,1)
+Z∼N(0,1)
 其概率密度函数为：
-$$f(z)&#x3D;\frac{1}{\sqrt{2\pi}}\exp\left(-\frac{z^{2}}{2}\right)$$
+f(z)=12πexp⁡(−z22)f(z)=\frac{1}{\sqrt{2\pi}}\exp\left(-\frac{z^{2}}{2}\right)
+f(z)=2π​1​exp(−2z2​)
 其他任何正态分布都可以通过标准正态分布进行线性变换得到：
-$$Z&#x3D;\frac{X-\mu}{\sigma}$$
+Z=X−μσZ=\frac{X-\mu}{\sigma}
+Z=σX−μ​
 数学性质
+
 
 
 性质
@@ -53,30 +45,52 @@ $$Z&#x3D;\frac{X-\mu}{\sigma}$$
 
 
 
+
 期望
-$E[X]&#x3D;\mu$
+E[X]=μE[X]=\muE[X]=μ
 分布中心
 
 
 方差
-$Var(X)&#x3D;\sigma^{2}$
+Var(X)=σ2Var(X)=\sigma^{2}Var(X)=σ2
 宽度决定波动
 
 
 对称性
-关于 $\mu$ 对称
+关于 μ\muμ 对称
 
 
 
-当泊松分布的参数 $\lambda$ 很大时（如 $\lambda &gt; 30$），泊松分布可以近似为正态分布：
-$$\pi(\lambda) \approx N(\mu&#x3D;\lambda, \sigma^{2}&#x3D;\lambda)$$
+
+当泊松分布的参数 λ\lambdaλ 很大时（如 λ&gt;30\lambda &gt; 30λ&gt;30），泊松分布可以近似为正态分布：
+π(λ)≈N(μ=λ,σ2=λ)\pi(\lambda) \approx N(\mu=\lambda, \sigma^{2}=\lambda)
+π(λ)≈N(μ=λ,σ2=λ)
 因此泊松分布可以认为是高斯分布的离散近似。
-图像import numpy as npimport matplotlib.pyplot as plt# 定义横轴范围x = np.linspace(-10, 10, 400)# 设置不同的 (μ, σ)params = [    (0, 1),     # 标准正态分布    (0, 2),     # 均值相同，但方差更大 → 更&quot;平&quot;    (2, 1),     # 均值平移到右边    (-2, 0.5)   # 均值左移，曲线更尖]# 绘制图像plt.figure(figsize=(8, 5))for mu, sigma in params:    y = (1 / (np.sqrt(2 * np.pi) * sigma)) * np.exp(-((x - mu) ** 2) / (2 * sigma ** 2))    plt.plot(x, y, label=f&#x27;μ=&#123;mu&#125;, σ=&#123;sigma&#125;&#x27;)plt.title(&#x27;Gaussian (Normal) Distributions with Different μ and σ&#x27;)plt.xlabel(&#x27;x&#x27;)plt.ylabel(&#x27;Probability Density&#x27;)plt.legend()plt.grid(True, linestyle=&#x27;--&#x27;, alpha=0.6)plt.show()
-
+图像
+import numpy as npimport matplotlib.pyplot as plt# 定义横轴范围x = np.linspace(-10, 10, 400)# 设置不同的 (μ, σ)params = [    (0, 1),     # 标准正态分布    (0, 2),     # 均值相同，但方差更大 → 更&quot;平&quot;    (2, 1),     # 均值平移到右边    (-2, 0.5)   # 均值左移，曲线更尖]# 绘制图像plt.figure(figsize=(8, 5))for mu, sigma in params:    y = (1 / (np.sqrt(2 * np.pi) * sigma)) * np.exp(-((x - mu) ** 2) / (2 * sigma ** 2))    plt.plot(x, y, label=f&#x27;μ=&#123;mu&#125;, σ=&#123;sigma&#125;&#x27;)plt.title(&#x27;Gaussian (Normal) Distributions with Different μ and σ&#x27;)plt.xlabel(&#x27;x&#x27;)plt.ylabel(&#x27;Probability Density&#x27;)plt.legend()plt.grid(True, linestyle=&#x27;--&#x27;, alpha=0.6)plt.show()
 
 ]]></content>
       <tags>
         <tag>Statistics</tag>
       </tags>
+  </entry>
+  <entry>
+    <title>Hello World</title>
+    <url>/2026/05/14/hello-world/</url>
+    <content><![CDATA[Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer in troubleshooting or you can ask me on GitHub.
+Quick Start
+Create a new post
+$ hexo new &quot;My New Post&quot;
+More info: Writing
+Run server
+$ hexo server
+More info: Server
+Generate static files
+$ hexo generate
+More info: Generating
+Deploy to remote sites
+$ hexo deploy
+More info: Deployment
+]]></content>
   </entry>
 </search>
