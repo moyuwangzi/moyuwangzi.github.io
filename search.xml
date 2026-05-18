@@ -93,4 +93,194 @@ import numpy as npimport matplotlib.pyplot as plt# 定义横轴范围x = np.lins
         <tag>Statistics</tag>
       </tags>
   </entry>
+  <entry>
+    <title>Dolphin 在 Niri 环境下「打开方式」看不到已安装程序</title>
+    <url>/2026/05/18/dolphin-open-with-fix-niri/</url>
+    <content><![CDATA[问题描述
+在 Niri（或其他非 KDE Plasma）窗口管理器中使用 Dolphin 时，右键菜单的「打开方式」列表为空，无法看到系统已安装的程序。
+运行 kbuildsycoca6 时出现警告：
+&quot;applications.menu&quot; not found in QList(&quot;/etc/xdg/menus&quot;)
+根本原因
+KDE Plasma 启动时会设置相关环境变量，使 kbuildsycoca6 能定位到菜单文件。
+在 Niri 等非 Plasma 环境中，这些变量缺失，kbuildsycoca6 退回查找默认的 applications.menu，但 Arch Linux 上该文件实际名为 plasma-applications.menu，导致找不到。
+解决方案
+创建软链接，将 plasma-applications.menu 映射为 applications.menu：
+sudo ln -s /etc/xdg/menus/plasma-applications.menu /etc/xdg/menus/applications.menu
+重建 KDE 服务缓存并重启 Dolphin：
+kbuildsycoca6pkill dolphin &amp;&amp; dolphin &amp;
+持久性
+软链接在重启后依然有效，无需额外配置。
+]]></content>
+      <tags>
+        <tag>system debug</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Rime 输入法：按 Shift 切换英文时上屏源码而非候选词</title>
+    <url>/2026/05/18/rime-shift-commit-raw-input-fix/</url>
+    <content><![CDATA[问题描述
+使用 fcitx5 + Rime（雾凇拼音）时，打字过程中按下 Shift 切换英文模式，期望上屏原始输入（如 nihao），实际却上屏了候选词（如 你好）。
+原因分析
+问题出在 fcitx5-rime 层面，而非 Rime 内部的 ascii_composer。
+Rime 的 default.yaml 中虽然已经配置了：
+ascii_composer:  switch_key:    Shift_L: commit_code  # 上屏源码
+但 fcitx5-rime 插件在处理输入法模式切换时，有自己的一套行为控制，由 rime.conf 中的 SwitchInputMethodBehavior 决定，该配置会覆盖 Rime 内部的 commit_code 指令。
+配置文件位置
+~/.config/fcitx5/conf/rime.conf
+可选值
+
+
+
+值
+行为
+
+
+
+
+Commit commit preview
+上屏候选词（默认，如&quot;你好&quot;）
+
+
+Commit raw input
+上屏原始输入（如&quot;nihao&quot;）
+
+
+Commit composing text
+上屏编辑中的文字
+
+
+Commit preview
+上屏预览文字
+
+
+
+解决方案
+将 rime.conf 中的：
+SwitchInputMethodBehavior=&quot;Commit commit preview&quot;
+改为：
+SwitchInputMethodBehavior=&quot;Commit raw input&quot;
+然后重启 fcitx5：
+fcitx5 -r
+环境
+
+输入框架：fcitx5
+输入法引擎：Rime（fcitx5-rime v5.1.13）
+方案：雾凇拼音（rime-ice）
+
+]]></content>
+      <tags>
+        <tag>system debug</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>MegaSync 在 Niri (Wayland) 上的修复方案</title>
+    <url>/2026/05/18/megasync-niri-fix/</url>
+    <content><![CDATA[问题描述
+
+MegaSync 在 Niri 环境下使用原生 Wayland 启动时直接崩溃（core dump）
+切换到 XWayland (xcb) 后能启动，但点击&quot;添加同步&quot;按钮时，对话框会坍缩为肉眼不可见的 1×1 像素
+
+根本原因
+两个独立问题叠加：
+1. 崩溃问题
+MegaSync 内部有 Wayland 检测代码。当 QT_QPA_PLATFORM=wayland 时，它在 createInfoDialog() 中尝试调用 xcb_intern_atom()（X11 操作），在纯 Wayland 环境下直接触发 segfault。
+修复： 强制使用 QT_QPA_PLATFORM=xcb，让 MegaSync 通过 XWayland 运行。
+2. 对话框 1×1 问题
+MegaSync 使用 Qt5 + Qt Quick (QML) 构建 UI。Qt5 QML 窗口在初始化时有一个竞态问题：
+
+Qt5 创建 X11 窗口，立即向 X server 发送 WM_NORMAL_HINTS
+此时 QML 内容还未加载，Qt5 使用默认尺寸 1×1
+WM_NORMAL_HINTS 中 min_size = max_size = 1×1 被写入
+QML 加载完毕后应该更新窗口尺寸，但在 XWayland (xwayland-satellite) 环境下这一步没有发生
+窗口被永久锁定在 1×1，Niri 无法突破这个约束
+
+通过 xprop 可以确认：
+WM_NORMAL_HINTS(WM_SIZE_HINTS):    user specified size: 1 by 1    program specified minimum size: 1 by 1    program specified maximum size: 1 by 1   ← 罪魁祸首
+修复： 用后台 watcher 脚本，检测到 max_size=1×1 后立即：
+
+xprop -remove WM_NORMAL_HINTS 移除约束
+xdotool windowsize 强制 resize
+
+
+所需软件包
+sudo pacman -S xorg-xrandr xdotool
+
+
+
+包
+用途
+
+
+
+
+xorg-xrandr
+查询/设置 XWayland 的屏幕信息
+
+
+xdotool
+向 X11 窗口发送 resize 事件
+
+
+
+
+Niri 窗口规则（winSet.kdl）
+无需额外规则。之前加的强制浮动规则已还原，MEGAsync 对话框会自然浮动显示。
+
+启动脚本
+路径：~/.local/bin/megasync-launch
+#!/bin/bash# megasync-launch: MegaSync (Qt5) launcher for Niri/Wayland## 问题根源：MegaSync 在 Qt5 QML 内容加载前就发送了 WM_NORMAL_HINTS，# 导致 max_size=1x1，窗口无法扩展。# 解决方案：后台 watcher 检测到 1x1 约束后用 xprop+xdotool 强制修复。megasync_watcher() &#123;    local megasync_pid=$1    local fixed_ids=&quot;&quot;    while kill -0 &quot;$megasync_pid&quot; 2&gt;/dev/null; do        for wid in $(DISPLAY=:1 xdotool search --class MEGAsync 2&gt;/dev/null); do            # 跳过已修复的窗口            echo &quot;$fixed_ids&quot; | grep -qw &quot;$wid&quot; &amp;&amp; continue            # 检查是否有 max_size=1x1 约束            hints=$(DISPLAY=:1 xprop -id &quot;$wid&quot; WM_NORMAL_HINTS 2&gt;/dev/null)            echo &quot;$hints&quot; | grep -q &quot;maximum size: 1 by 1&quot; || continue            # 修复：移除尺寸约束，然后强制 resize            DISPLAY=:1 xprop -id &quot;$wid&quot; -remove WM_NORMAL_HINTS 2&gt;/dev/null            sleep 0.2            DISPLAY=:1 xdotool windowsize &quot;$wid&quot; 860 600 2&gt;/dev/null            fixed_ids=&quot;$fixed_ids $wid&quot;        done        sleep 0.3    done&#125;# 启动 MegaSync，强制 XWayland 后端，完全脱离终端env QT_QPA_PLATFORM=xcb WAYLAND_DISPLAY= megasync &quot;$@&quot; &amp;&gt;/dev/null &amp;MEGASYNC_PID=$!megasync_watcher &quot;$MEGASYNC_PID&quot; &amp;&gt;/dev/null &amp;disown
+赋予执行权限：
+chmod +x ~/.local/bin/megasync-launch
+
+Niri 自启动配置
+在 ~/.config/niri/config.kdl 中，将原来的：
+spawn-at-startup &quot;megasync&quot;
+改为：
+spawn-at-startup &quot;megasync-launch&quot;
+
+调试记录（排查过程中的无效尝试）
+以下方案无效，仅供参考：
+
+
+
+尝试
+原因无效
+
+
+
+
+QT_QPA_PLATFORMTHEME= 清空
+不影响 size hints 的发送时机
+
+
+XDG_SESSION_TYPE=x11
+同上
+
+
+QSG_RENDER_LOOP=basic
+Qt Quick 渲染线程模式与此问题无关
+
+
+QT_QUICK_BACKEND=software
+软渲染不改变 size hints 行为
+
+
+env -i 最小化环境
+反而造成语言变英文，无法解决根本问题
+
+
+Niri min-width/min-height 窗口规则
+对 XWayland 窗口的 max_size 约束无效
+
+
+Niri open-floating true
+能让窗口浮动，但尺寸仍为 1×1
+
+
+
+]]></content>
+      <tags>
+        <tag>system debug</tag>
+      </tags>
+  </entry>
 </search>
