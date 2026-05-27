@@ -283,4 +283,75 @@ Niri open-floating true
         <tag>system debug</tag>
       </tags>
   </entry>
+  <entry>
+    <title>niri 下 WeChat 内 Rime 候选窗不可见的修复</title>
+    <url>/2026/05/27/wechat-rime-candidate-fix/</url>
+    <content><![CDATA[现象
+
+微信 (wechat-appimage 4.1.1, 腾讯官方 AppImage) 在 niri 下使用时，Rime 输入框内能看到拼音 preedit（如 ni'hao），但候选词选单完全不可见，只能盲打。
+仅微信有此问题，niri 下其他应用 (kitty、Chrome 等) 的 Rime 候选窗均正常。
+
+环境
+
+
+
+组件
+版本/信息
+
+
+
+
+OS
+Arch Linux
+
+
+Compositor
+niri (Wayland)
+
+
+输入法框架
+fcitx5 5.1.19
+
+
+输入法引擎
+Rime
+
+
+候选窗插件
+classicui (macOS-dark 主题)
+
+
+微信
+wechat-appimage 4.1.1
+
+
+微信运行模式
+XWayland (QT_QPA_PLATFORM=xcb)
+
+
+
+根本原因
+
+微信桌面文件强制使用 QT_QPA_PLATFORM=xcb，微信运行在 XWayland 下。
+fcitx5 classic UI 对于 X11 客户端会在对应 X 显示器上以 override-redirect 窗口 渲染候选窗。
+niri 作为严格的 Wayland compositor，对 XWayland 的 override-redirect popup 窗口处理存在兼容性问题——候选窗可能被定位到屏幕外或被主窗口遮挡。
+没有 WAYLAND_DISPLAY 环境变量时，fcitx5 无法感知 Wayland 显示后端，候选窗纯走 X11 路径。
+XWayland 的坐标映射和 DPI 缩放 (PerScreenDPI=False) 加剧了候选窗位置计算偏差。
+
+简而言之：fcitx5 的候选窗作为 X11 popup 在 XWayland 下渲染，niri 无法正确处理其定位和层级。
+解决方案
+修改 1：wechat.desktop
+文件路径：~/.local/share/applications/wechat.desktop
+Exec=env DESKTOPINTEGRATION=false QT_QPA_PLATFORM=xcb \  QT_IM_MODULE=fcitx XMODIFIERS=@im=fcitx \  WAYLAND_DISPLAY=wayland-1 DISPLAY=:1 \  /usr/bin/wechat %U
+关键变更：新增 WAYLAND_DISPLAY=wayland-1，让 fcitx5 classic UI 感知 Wayland 后端，候选窗使用 Wayland surface 渲染而非 X11 popup。
+修改 2：fcitx5 classicui.conf
+文件路径：~/.config/fcitx5/conf/classicui.conf
+PerScreenDPI=True      # 原 False — 多屏 DPI 独立计算ForceWaylandDPI=96     # 原 0 — 明确 DPI，避免 XWayland 缩放偏移
+生效步骤
+fcitx5 -r                      # 重载 fcitx5 配置killall wechat &amp;&amp; 重新启动微信   # 重启微信
+]]></content>
+      <tags>
+        <tag>system debug</tag>
+      </tags>
+  </entry>
 </search>
